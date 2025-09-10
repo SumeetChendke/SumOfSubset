@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Subset Sum Decision Tree with Arrows</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(45deg, #2e8b57, #ff4500);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  #container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    max-width: 1200px;
+    width: 95%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+  }
+  h1 {
+    color: #2e8b57;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  #inputs {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  input, button {
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+  }
+  input {
+    width: 150px;
+    border: 2px solid #2e8b57;
+    outline: none;
+  }
+  input:focus {
+    box-shadow: 0 0 10px rgba(46, 139, 87, 0.5);
+  }
+  button {
+    background: linear-gradient(45deg, #2e8b57, #ff4500);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  }
+  #note {
+    color: #ff4500;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+  }
+  #tree-container {
+    margin-top: 20px;
+    min-height: 600px;
+    overflow: auto;
+    white-space: normal;
+    position: relative;
+    padding-bottom: 60px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+  }
+  .node {
+    position: absolute !important;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(45deg, #4682b4, #ffb347);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.6em;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.5s ease;
+    user-select: none;
+    cursor: default;
+  }
+  .node.active {
+    border: 2px solid #32cd32;
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+  }
+  .node.leaf.correct {
+    background: linear-gradient(45deg, #008000, #adff2f);
+  }
+  .node.leaf.incorrect {
+    background: linear-gradient(45deg, #dc143c, #ff6347);
+  }
+  .node.gray {
+    opacity: 0.5;
+  }
+  .buttons {
+    margin-top: 5px;
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+  }
+  .buttons button {
+    width: 30px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 0.6em;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: background-color 0.3s ease;
+  }
+  .yes-btn {
+    background: #32cd32;
+  }
+  .no-btn {
+    background: #dc143c;
+  }
+  .yes-btn:hover {
+    background: #228b22;
+  }
+  .no-btn:hover {
+    background: #b22222;
+  }
+  .result {
+    margin-top: 4px;
+    font-size: 0.5em;
+    font-weight: bold;
+  }
+
+  /* Arrow container */
+  .arrow-svg {
+    position: absolute;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 5;
+  }
+
+  /* Media Queries */
+  @media (max-width: 600px) {
+    .node {
+      width: 50px;
+      height: 50px;
+      font-size: 0.5em;
+    }
+    #container {
+      padding: 15px;
+    }
+    .buttons button {
+      width: 25px;
+      height: 18px;
+      font-size: 0.5em;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <h1>Subset Sum Decision Tree with Arrows</h1>
+  <div id="inputs">
+    <input id="numbers" type="text" placeholder="e.g., 1,3,5,8,10,15,20" />
+    <input id="target" type="number" placeholder="Target sum" />
+    <button id="startBtn">Start</button>
+  </div>
+  <p id="note">Note: Use sets up to 10 numbers to avoid overload. YES adds to sum (branch left), NO excludes (branch right). Arrows show the branches.</p>
+  <div id="tree-container"></div>
+</div>
+
+<script>
+  const numbersInput = document.getElementById('numbers');
+  const targetInput = document.getElementById('target');
+  const startBtn = document.getElementById('startBtn');
+  const treeContainer = document.getElementById('tree-container');
+
+  let numbers = [];
+  let target = 0;
+  let treeLevels = [];
+  let activeNode = null;
+
+  startBtn.addEventListener('click', () => {
+    const rawNumbers = numbersInput.value.trim();
+    const rawTarget = targetInput.value.trim();
+
+    if (!rawNumbers) {
+      alert('Please enter numbers separated by commas.');
+      return;
+    }
+    if (!rawTarget || isNaN(rawTarget)) {
+      alert('Please enter a valid target sum.');
+      return;
+    }
+
+    const parsedNumbers = rawNumbers.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    if (parsedNumbers.length === 0) {
+      alert('Please enter at least one number.');
+      return;
+    }
+    if (parsedNumbers.length > 10) {
+      alert('Please enter at most 10 numbers to avoid overload.');
+      return;
+    }
+
+    const nums = [];
+    for (const s of parsedNumbers) {
+      const n = Number(s);
+      if (isNaN(n)) {
+        alert(`Invalid number detected: "${s}". Please enter only numbers.`);
+        return;
+      }
+      nums.push(n);
+    }
+
+    numbers = nums;
+    target = Number(rawTarget);
+
+    resetTree();
+    initiateTree();
+  });
+
+  function resetTree() {
+    treeContainer.innerHTML = '';
+    treeLevels = [];
+    activeNode = null;
+  }
+
+  function initiateTree() {
+    const root = createNode(0, 0, null);
+    addNodeToLevel(0, root);
+    activeNode = root;
+    renderTree();
+  }
+
+  function createNode(index, sum, parent) {
+    const div = document.createElement('div');
+    div.className = 'node';
+    div.innerHTML = `<div>Idx: ${index}</div><div>Sum: ${sum}</div>`;
+
+    const buttons = document.createElement('div');
+    buttons.className = 'buttons';
+
+    const yesBtn = document.createElement('button');
+    yesBtn.className = 'yes-btn';
+    yesBtn.textContent = 'YES';
+    yesBtn.title = 'Include this number';
+    yesBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onDecision(true);
+    });
+
+    const noBtn = document.createElement('button');
+    noBtn.className = 'no-btn';
+    noBtn.textContent = 'NO';
+    noBtn.title = 'Exclude this number';
+    noBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onDecision(false);
+    });
+
+    buttons.appendChild(yesBtn);
+    buttons.appendChild(noBtn);
+    div.appendChild(buttons);
+
+    return {
+      index,
+      sum,
+      parent,
+      yesNode: null,
+      noNode: null,
+      div,
+      isLeaf: index >= numbers.length
+    };
+  }
+
+  function addNodeToLevel(level, node) {
+    if (!treeLevels[level]) {
+      treeLevels[level] = [];
+    }
+    treeLevels[level].push(node);
+  }
+
+  // Store node positions
+  const nodePositions = new Map();
+
+  function calculatePositions() {
+    const startX = treeContainer.clientWidth / 2;
+    const startY = 20;
+    const levelHeight = 100;
+    const baseHorizontalGap = 160;
+
+    nodePositions.clear();
+
+    function placeNode(node, x, y) {
+      nodePositions.set(node, {x, y});
+
+      if (node.yesNode) {
+        // Decrease horizontal gap with depth to avoid overlap
+        const gap = baseHorizontalGap / Math.pow(2, node.index);
+        placeNode(node.yesNode, x - gap, y + levelHeight);
+      }
+      if (node.noNode) {
+        const gap = baseHorizontalGap / Math.pow(2, node.index);
+        placeNode(node.noNode, x + gap, y + levelHeight);
+      }
+    }
+
+    if (treeLevels[0] && treeLevels[0][0]) {
+      placeNode(treeLevels[0][0], startX, startY);
+    }
+  }
+
+  function renderTree() {
+    treeContainer.innerHTML = '';
+
+    // Create container for arrows (SVG)
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute('class', 'arrow-svg');
+    svg.style.position = 'absolute';
+    svg.style.top = 0;
+    svg.style.left = 0;
+    svg.style.width = '100%';
+    svg.style.height = treeContainer.scrollHeight + 600 + 'px';
+    treeContainer.appendChild(svg);
+
+    // Calculate node positions before adding nodes to DOM
+    calculatePositions();
+
+    // Add arrowhead marker
+    const defs = document.createElementNS(svgNS, 'defs');
+    const marker = document.createElementNS(svgNS, 'marker');
+    marker.setAttribute('id', 'arrowhead');
+    marker.setAttribute('markerWidth', '10');
+    marker.setAttribute('markerHeight', '7');
+    marker.setAttribute('refX', '0');
+    marker.setAttribute('refY', '3.5');
+    marker.setAttribute('orient', 'auto');
+    marker.setAttribute('markerUnits', 'strokeWidth');
+
+    const arrowPath = document.createElementNS(svgNS, 'path');
+    arrowPath.setAttribute('d', 'M0,0 L0,7 L10,3.5 z');
+    arrowPath.setAttribute('fill', '#333');
+    marker.appendChild(arrowPath);
+    defs.appendChild(marker);
+    svg.appendChild(defs);
+
+    for (const level of treeLevels) {
+      for (const node of level) {
+        const pos = nodePositions.get(node);
+        if (pos) {
+          node.div.style.position = 'absolute';
+          node.div.style.left = `${pos.x - 35}px`; // center node (70px wide)
+          node.div.style.top = `${pos.y}px`;
+        }
+        treeContainer.appendChild(node.div);
+      }
+    }
+
+    // Draw arrows after nodes are appended
+    for (const level of treeLevels) {
+      for (const node of level) {
+        if (node.yesNode) {
+          drawArrowBetweenNodes(svg, node.div, node.yesNode.div, true);
+        }
+        if (node.noNode) {
+          drawArrowBetweenNodes(svg, node.div, node.noNode.div, false);
+        }
+      }
+    }
+  }
+
+  function drawArrowBetweenNodes(svg, fromDiv, toDiv, isYesBranch) {
+    const svgNS = "http://www.w3.org/2000/svg";
+
+    // Get positions relative to treeContainer
+    const startX = fromDiv.offsetLeft + fromDiv.offsetWidth / 2;
+    const startY = fromDiv.offsetTop + fromDiv.offsetHeight;
+
+    const endX = toDiv.offsetLeft + toDiv.offsetWidth / 2;
+    const endY = toDiv.offsetTop;
+
+    const path = document.createElementNS(svgNS, 'path');
+    // Cubic Bezier curve for nice curved arrows
+    const d = `M${startX},${startY} C${startX},${(startY + endY) / 2} ${endX},${(startY + endY) / 2} ${endX},${endY}`;
+
+    path.setAttribute('stroke', isYesBranch ? '#32cd32' : '#dc143c');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('marker-end', 'url(#arrowhead)');
+    path.setAttribute('d', d);
+
+    svg.appendChild(path);
+  }
+
+  function onDecision(chooseYes) {
+    if (!activeNode) return;
+
+    if (activeNode.isLeaf) {
+      alert('Reached a leaf node. Restart to try again.');
+      return;
+    }
+
+    const currentIndex = activeNode.index;
+    const currentSum = activeNode.sum;
+    const num = numbers[currentIndex];
+
+    let nextIndex = currentIndex + 1;
+    let nextSum = chooseYes ? currentSum + num : currentSum;
+
+    // Check if node already created
+    if (chooseYes && !activeNode.yesNode) {
+      const yesNode = createNode(nextIndex, nextSum, activeNode);
+      activeNode.yesNode = yesNode;
+      addNodeToLevel(nextIndex, yesNode);
+    }
+    if (!chooseYes && !activeNode.noNode) {
+      const noNode = createNode(nextIndex, nextSum, activeNode);
+      activeNode.noNode = noNode;
+      addNodeToLevel(nextIndex, noNode);
+    }
+
+    activeNode.div.classList.remove('active');
+    activeNode.div.classList.add('gray'); // mark as visited
+
+    activeNode = chooseYes ? activeNode.yesNode : activeNode.noNode;
+    activeNode.div.classList.add('active');
+
+    if (activeNode.isLeaf) {
+      if (activeNode.sum === target) {
+        activeNode.div.classList.add('leaf', 'correct');
+        alert(`Success! Subset found with sum = ${target}`);
+      } else {
+        activeNode.div.classList.add('leaf', 'incorrect');
+        alert(`No subset with sum = ${target} at this branch.`);
+      }
+    }
+
+    renderTree();
+  }
+</script>
+</body>
+</html>
