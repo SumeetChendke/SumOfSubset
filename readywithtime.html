@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Subset Sum Decision Tree with Arrows & Paths</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(45deg, #2e8b57, #ff4500);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  #container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    max-width: 1200px;
+    width: 95%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  h1 {
+    color: #2e8b57;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  #inputs {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  input, button {
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+  }
+  input {
+    width: 150px;
+    border: 2px solid #2e8b57;
+    outline: none;
+  }
+  input:focus {
+    box-shadow: 0 0 10px rgba(46, 139, 87, 0.5);
+  }
+  button {
+    background: linear-gradient(45deg, #2e8b57, #ff4500);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  }
+  #note {
+    color: #ff4500;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+  }
+
+  #tree-container {
+    margin-top: 20px;
+    min-height: 600px;
+    max-height: 600px;
+    overflow-x: auto;
+    overflow-y: auto;
+    white-space: nowrap;
+    border: 1px solid #ccc;
+    background: #ffffff;
+    flex-grow: 1;
+    position: relative;
+  }
+
+  #inner-tree {
+    position: relative;
+    height: 600px;
+    min-width: 1200px;
+    white-space: normal;
+  }
+
+  .node {
+    position: absolute !important;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(45deg, #4682b4, #ffb347);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.6em;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.5s ease;
+    user-select: none;
+    cursor: default;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .node.active {
+    border: 2px solid #32cd32;
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+  }
+  .node.leaf.correct {
+    background: linear-gradient(45deg, #008000, #adff2f);
+  }
+  .node.leaf.incorrect {
+    background: linear-gradient(45deg, #dc143c, #ff6347);
+  }
+  .node.gray {
+    opacity: 0.5;
+  }
+
+  .node.target-sum {
+    background: #004d00 !important;
+    color: #a0d8ff !important;
+    cursor: pointer;
+    box-shadow: 0 0 15px 3px #3399ff;
+  }
+  .node.path-highlight {
+    border: 3px solid #3399ff !important;
+    box-shadow: 0 0 10px 4px #3399ff !important;
+  }
+
+  .buttons {
+    margin-top: 5px;
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+  }
+  .buttons button {
+    width: 30px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 0.6em;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: background-color 0.3s ease;
+  }
+  .yes-btn {
+    background: #32cd32;
+  }
+  .no-btn {
+    background: #dc143c;
+  }
+  .yes-btn:hover {
+    background: #228b22;
+  }
+  .no-btn:hover {
+    background: #b22222;
+  }
+  .result {
+    margin-top: 4px;
+    font-size: 0.5em;
+    font-weight: bold;
+  }
+
+  .arrow-svg {
+    position: absolute;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 5;
+  }
+
+  #footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding-bottom: 20px;
+  }
+
+  .fancy-btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(45deg, #00c6ff, #0072ff);
+    cursor: pointer;
+    transition: all 0.4s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fancy-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    background-position: right center;
+  }
+
+  .fancy-btn.bg-pink-500 {
+    background: linear-gradient(45deg, #ff4081, #f50057);
+  }
+
+  .fancy-btn.bg-pink-500:hover {
+    background: linear-gradient(45deg, #f50057, #ff4081);
+  }
+
+  #path-panel {
+    background: #eef6ff;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(51, 153, 255, 0.3);
+    padding: 15px;
+    margin: 20px 0;
+    max-height: 200px;
+    overflow-y: auto;
+    text-align: left;
+  }
+  #path-panel h2 {
+    margin-top: 0;
+    color: #0072ff;
+  }
+  .path-entry {
+    background: white;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #3399ff;
+    font-size: 0.85em;
+    font-family: monospace;
+    white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <h1>Subset Sum Decision Tree with Arrows & Paths</h1>
+  <div id="inputs">
+    <input id="numbers" placeholder="Numbers (comma-separated)" />
+    <input id="target" placeholder="Target sum" type="number" />
+    <button id="startBtn">Start</button>
+  </div>
+  <p id="note">* Limit input to max 10 numbers for performance.</p>
+
+  <div id="tree-container">
+    <div id="inner-tree"></div>
+  </div>
+
+  <div id="path-panel" style="display:none;">
+    <h2>Found Paths to Target Sum</h2>
+    <div id="paths-list"></div>
+  </div>
+
+  <div id="footer">
+    <button id="yesBtn" class="fancy-btn yes-btn" disabled>YES (Include)</button>
+    <button id="noBtn" class="fancy-btn no-btn" disabled>NO (Exclude)</button>
+    <button id="autoBtn" class="fancy-btn bg-pink-500" disabled>Auto Build</button>
+  </div>
+</div>
+
+<script>
+  let numbers = [];
+  let target = 0;
+  let treeLevels = [];
+  let nodePositions = new Map();
+  let activeNode = null;
+
+  const treeContainer = document.getElementById('tree-container');
+  const innerTree = document.getElementById('inner-tree');
+  const yesBtn = document.getElementById('yesBtn');
+  const noBtn = document.getElementById('noBtn');
+  const autoBtn = document.getElementById('autoBtn');
+
+  const pathPanel = document.getElementById('path-panel');
+  const pathsList = document.getElementById('paths-list');
+
+  let solutionNodes = [];
+  let renderTimeouts = [];
+
+  document.getElementById('startBtn').addEventListener('click', () => {
+    const numsText = document.getElementById('numbers').value.trim();
+    const tgtText = document.getElementById('target').value.trim();
+
+    if (!numsText || !tgtText) {
+      alert('Please enter numbers and a target.');
+      return;
+    }
+
+    const numArray = numsText.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+
+    if (numArray.length === 0) {
+      alert('Please enter valid numbers.');
+      return;
+    }
+
+    if (numArray.length > 10) {
+      alert('Please limit input to max 10 numbers for performance.');
+      return;
+    }
+
+    numbers = numArray;
+    target = parseInt(tgtText);
+
+    resetTree();
+    buildRootNode();
+
+    yesBtn.disabled = false;
+    noBtn.disabled = false;
+    autoBtn.disabled = false;
+    pathPanel.style.display = 'none';
+  });
+
+  yesBtn.addEventListener('click', () => onDecision(true));
+  noBtn.addEventListener('click', () => onDecision(false));
+  autoBtn.addEventListener('click', () => autoBuildTree());
+
+  function resetTree() {
+    treeLevels = [];
+    nodePositions.clear();
+    activeNode = null;
+    solutionNodes = [];
+    innerTree.innerHTML = '';
+    pathsList.innerHTML = '';
+    pathPanel.style.display = 'none';
+    renderTimeouts.forEach(t => clearTimeout(t));
+    renderTimeouts = [];
+  }
+
+  function createNode(index, sum, parent = null, decision = null) {
+    const node = {
+      index,
+      sum,
+      parent,
+      yesNode: null,
+      noNode: null,
+      isLeaf: index >= numbers.length,
+      div: null,
+      decision, 
+    };
+
+    const div = document.createElement('div');
+    div.className = 'node';
+    div.innerHTML = `<div>Idx: ${index}</div><div>Sum: ${sum}</div>`;
+
+    if (!node.isLeaf) {
+      const btns = document.createElement('div');
+      btns.className = 'buttons';
+      btns.innerHTML = `
+        <button class="yes-btn">YES</button>
+        <button class="no-btn">NO</button>
+      `;
+      div.appendChild(btns);
+    }
+    node.div = div;
+    return node;
+  }
+
+  function addNodeToLevel(level, node) {
+    if (!treeLevels[level]) treeLevels[level] = [];
+    treeLevels[level].push(node);
+  }
+
+  function buildRootNode() {
+    const root = createNode(0, 0, null);
+    addNodeToLevel(0, root);
+    activeNode = root;
+    renderTreeSequential();
+  }
+
+  function calculatePositions() {
+    nodePositions.clear();
+    const levelHeight = 140; 
+    const nodeWidth = 70;
+    const nodeGap = 40;
+
+    let maxNodesInLevel = 0;
+    for (const level of treeLevels) {
+      if (level && level.length > maxNodesInLevel) maxNodesInLevel = level.length;
+    }
+    const totalWidth = maxNodesInLevel * (nodeWidth + nodeGap) + nodeGap;
+    const baseWidth = 1200;
+    innerTree.style.minWidth = Math.max(totalWidth, baseWidth) + 'px';
+
+    for (let lvl = 0; lvl < treeLevels.length; lvl++) {
+      const level = treeLevels[lvl];
+      if (!level) continue;
+      const y = lvl * levelHeight + 10;
+      const count = level.length;
+      if (count === 1) {
+        const x = totalWidth / 2;
+        nodePositions.set(level[0], { x, y });
+      } else {
+        const gap = (totalWidth - count * nodeWidth) / (count + 1);
+        for (let i = 0; i < count; i++) {
+          const x = gap + i * (nodeWidth + gap) + nodeWidth / 2;
+          nodePositions.set(level[i], { x, y });
+        }
+      }
+    }
+  }
+
+  function renderTreeSequential() {
+    innerTree.innerHTML = '';
+    solutionNodes = [];
+    calculatePositions();
+
+    const svg = createSVGOverlay();
+    innerTree.appendChild(svg);
+
+    let delay = 0;
+    for (const level of treeLevels) {
+      if (!level) continue;
+      for (const node of level) {
+        const pos = nodePositions.get(node);
+        if (!pos) continue;
+        delay += 1500;
+        const t = setTimeout(() => {
+          renderSingleNode(node, pos);
+          updateArrows(svg);
+          updatePathPanel();
+        }, delay);
+        renderTimeouts.push(t);
+      }
+    }
+  }
+
+  function renderSingleNode(node, pos) {
+    const div = node.div;
+    div.style.left = `${pos.x - 35}px`;
+    div.style.top = `${pos.y}px`;
+    div.style.position = 'absolute';
+    div.classList.remove('leaf','correct','incorrect','gray','target-sum','path-highlight');
+
+    if (node.isLeaf) {
+      div.classList.add('leaf');
+      if (node.sum === target) {
+        div.classList.add('correct');
+      } else {
+        div.classList.add('incorrect');
+      }
+      const btns = div.querySelector('.buttons');
+      if (btns) btns.style.display = 'none';
+      let resDiv = div.querySelector('.result');
+      if (!resDiv) {
+        resDiv = document.createElement('div');
+        resDiv.className = 'result';
+        div.appendChild(resDiv);
+      }
+      resDiv.textContent = node.sum === target ? '✓ Correct' : '✗ Incorrect';
+    }
+    if (node.sum === target) {
+      div.classList.add('target-sum');
+      solutionNodes.push(node);
+      div.oncontextmenu = (e) => {
+        e.preventDefault();
+        highlightPath(node);
+      };
+    }
+    if (node === activeNode) {
+      div.classList.add('active');
+    }
+    innerTree.appendChild(div);
+  }
+
+  function updateArrows(svg) {
+    svg.innerHTML = '';
+    for (const level of treeLevels) {
+      if (!level) continue;
+      for (const node of level) {
+        const posFrom = nodePositions.get(node);
+        if (!posFrom) continue;
+        if (node.yesNode) {
+          const posTo = nodePositions.get(node.yesNode);
+          if (posTo) drawArrow(svg,posFrom.x,posFrom.y+70,posTo.x,posTo.y);
+        }
+        if (node.noNode) {
+          const posTo = nodePositions.get(node.noNode);
+          if (posTo) drawArrow(svg,posFrom.x,posFrom.y+70,posTo.x,posTo.y);
+        }
+      }
+    }
+  }
+
+  function onDecision(include) {
+    if (!activeNode || activeNode.isLeaf) return;
+    const idx = activeNode.index;
+    const currentSum = activeNode.sum;
+    const nextIndex = idx + 1;
+    const chosenNumber = numbers[idx];
+    const newSum = include ? currentSum + chosenNumber : currentSum;
+    const nextNode = createNode(nextIndex, newSum, activeNode, include);
+    if (include) activeNode.yesNode = nextNode;
+    else activeNode.noNode = nextNode;
+    addNodeToLevel(nextIndex, nextNode);
+    activeNode = nextNode;
+    renderTreeSequential();
+  }
+
+  function autoBuildTree() {
+    resetTree();
+    treeLevels[0] = [];
+    const root = createNode(0, 0, null);
+    treeLevels[0].push(root);
+    for (let level = 0; level < numbers.length; level++) {
+      treeLevels[level+1] = [];
+      for (const node of treeLevels[level]) {
+        const noNode = createNode(level+1, node.sum, node, false);
+        node.noNode = noNode;
+        treeLevels[level+1].push(noNode);
+        const yesNode = createNode(level+1, node.sum + numbers[level], node, true);
+        node.yesNode = yesNode;
+        treeLevels[level+1].push(yesNode);
+      }
+    }
+    activeNode = null;
+    renderTreeSequential();
+  }
+
+  function createSVGOverlay() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.classList.add('arrow-svg');
+    svg.setAttribute('width', innerTree.scrollWidth);
+    svg.setAttribute('height', innerTree.scrollHeight);
+    return svg;
+  }
+
+  function drawArrow(svg,x1,y1,x2,y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.sqrt(dx*dx+dy*dy);
+    if (len === 0) return;
+    const ux = dx/len;
+    const uy = dy/len;
+    const startX = x1 + ux*35;
+    const startY = y1 + uy*35;
+    const endX = x2 - ux*35;
+    const endY = y2 - uy*35;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',startX);
+    line.setAttribute('y1',startY);
+    line.setAttribute('x2',endX);
+    line.setAttribute('y2',endY);
+    line.setAttribute('stroke','#000');
+    line.setAttribute('stroke-width','1.5');
+    line.setAttribute('marker-end','url(#arrowhead)');
+    svg.appendChild(line);
+    if (!svg.querySelector('#arrowhead')) {
+      const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+      const marker = document.createElementNS('http://www.w3.org/2000/svg','marker');
+      marker.setAttribute('id','arrowhead');
+      marker.setAttribute('markerWidth','10');
+      marker.setAttribute('markerHeight','7');
+      marker.setAttribute('refX','5');
+      marker.setAttribute('refY','3.5');
+      marker.setAttribute('orient','auto');
+      const polygon = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      polygon.setAttribute('points','0 0, 10 3.5, 0 7');
+      polygon.setAttribute('fill','#000');
+      marker.appendChild(polygon);
+      defs.appendChild(marker);
+      svg.appendChild(defs);
+    }
+  }
+
+  function highlightPath(node) {
+    innerTree.querySelectorAll('.node').forEach(div=>{
+      div.classList.remove('path-highlight');
+    });
+    let current = node;
+    while(current) {
+      current.div.classList.add('path-highlight');
+      current = current.parent;
+    }
+  }
+
+  function updatePathPanel() {
+    if (solutionNodes.length === 0) {
+      pathPanel.style.display = 'none';
+      return;
+    }
+    pathPanel.style.display = 'block';
+    pathsList.innerHTML = '';
+    solutionNodes.forEach((node,idx)=>{
+      const path = [];
+      let current=node;
+      while(current && current.parent){
+        if(current.decision!==null){
+          path.push(`${current.decision?'+':'-'}${numbers[current.parent.index]}`);
+        }
+        current=current.parent;
+      }
+      path.reverse();
+      const entry=document.createElement('div');
+      entry.className='path-entry';
+      entry.textContent=`Path ${idx+1}: ${path.join(' ')} = ${target}`;
+      pathsList.appendChild(entry);
+    });
+  }
+</script>
+</body>
+</html>
