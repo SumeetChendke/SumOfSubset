@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Subset Sum Decision Tree with Arrows & Paths</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(45deg, #2e8b57, #ff4500);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+#container {
+  width: 100vw;
+  height: 200vh;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 0; /* remove rounding since it's fullscreen */
+  padding: 20px;
+  box-shadow: none; /* optional: remove shadow for fullscreen */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+  h1 {
+    color: #2e8b57;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  #inputs {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  input, button {
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+  }
+  input {
+    width: 150px;
+    border: 2px solid #2e8b57;
+    outline: none;
+  }
+  input:focus {
+    box-shadow: 0 0 10px rgba(46, 139, 87, 0.5);
+  }
+  button {
+    background: linear-gradient(45deg, #2e8b57, #ff4500);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  }
+  #note {
+    color: #ff4500;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+  }
+
+  #tree-container {
+    margin-top: 20px;
+    min-height: 600px;
+    max-height: 600px;
+    overflow-x: auto;
+    overflow-y: auto;
+    white-space: nowrap;
+    border: 1px solid #ccc;
+    background: #ffffff;
+    flex-grow: 1;
+    position: relative;
+  }
+
+  #inner-tree {
+    position: relative;
+    height: 600px;
+    min-width: 1200px;
+    white-space: normal;
+  }
+
+  .node {
+    position: absolute !important;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(45deg, #4682b4, #ffb347);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.6em;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.5s ease;
+    user-select: none;
+    cursor: default;
+  }
+  .node.active {
+    border: 2px solid #32cd32;
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+  }
+  .node.leaf.correct {
+    background: linear-gradient(45deg, #008000, #adff2f);
+  }
+  .node.leaf.incorrect {
+    background: linear-gradient(45deg, #dc143c, #ff6347);
+  }
+  .node.gray {
+    opacity: 0.5;
+  }
+
+  /* NEW: Dark green background for sum === target */
+  .node.target-sum {
+    background: #004d00 !important;
+    color: #a0d8ff !important;
+    cursor: pointer;
+    box-shadow: 0 0 15px 3px #3399ff;
+  }
+  /* NEW: Path highlight on right-click (blue border/glow) */
+  .node.path-highlight {
+    border: 3px solid #3399ff !important;
+    box-shadow: 0 0 10px 4px #3399ff !important;
+  }
+
+  .buttons {
+    margin-top: 5px;
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+  }
+  .buttons button {
+    width: 30px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 0.6em;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: background-color 0.3s ease;
+  }
+  .yes-btn {
+    background: #32cd32;
+  }
+  .no-btn {
+    background: #dc143c;
+  }
+  .yes-btn:hover {
+    background: #228b22;
+  }
+  .no-btn:hover {
+    background: #b22222;
+  }
+  .result {
+    margin-top: 4px;
+    font-size: 0.5em;
+    font-weight: bold;
+  }
+
+  .arrow-svg {
+    position: absolute;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 5;
+  }
+
+  #footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding-bottom: 20px;
+  }
+
+  .fancy-btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(45deg, #00c6ff, #0072ff);
+    cursor: pointer;
+    transition: all 0.4s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fancy-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    background-position: right center;
+  }
+
+  .fancy-btn.bg-pink-500 {
+    background: linear-gradient(45deg, #ff4081, #f50057);
+  }
+
+  .fancy-btn.bg-pink-500:hover {
+    background: linear-gradient(45deg, #f50057, #ff4081);
+  }
+
+  #path-panel {
+    background: #eef6ff;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(51, 153, 255, 0.3);
+    padding: 15px;
+    margin: 20px 0;
+    max-height: 200px;
+    overflow-y: auto;
+    text-align: left;
+  }
+  #path-panel h2 {
+    margin-top: 0;
+    color: #0072ff;
+  }
+  .path-entry {
+    background: white;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #3399ff;
+    font-size: 0.85em;
+    font-family: monospace;
+    white-space: pre-wrap;
+  }
+
+  #speed-control {
+  margin: 15px auto;
+  width: 80%;
+  max-width: 600px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 1em;
+  font-weight: bold;
+  color: #0072ff;
+}
+
+#speed-control label {
+  flex-shrink: 0;
+  color: #2e8b57;
+}
+
+#speedRange {
+  -webkit-appearance: none;
+  width: 60%;
+  height: 8px;
+  background: linear-gradient(90deg, #2e8b57, #ff4500);
+  border-radius: 6px;
+  outline: none;
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
+#speedRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle at 30% 30%, #ffffff, #0072ff);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0,114,255,0.7);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#speedRange::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 15px rgba(0,114,255,1);
+}
+
+#speedRange::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle at 30% 30%, #ffffff, #0072ff);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0,114,255,0.7);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+#speedValue {
+  font-family: monospace;
+  font-size: 0.95em;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #eef6ff;
+  box-shadow: 0 0 8px rgba(51,153,255,0.3);
+  transition: all 0.3s ease;
+}
+
+</style>
+</head>
+<body>
+<div id="container">
+  <h1>Subset Sum Decision Tree with Arrows & Paths</h1>
+  <div id="inputs">
+    <input id="numbers" placeholder="Numbers (comma-separated)" />
+    <input id="target" placeholder="Target sum" type="number" />
+    <button id="startBtn">Start</button>
+  </div>
+  <p id="note">* Limit input to max 10 numbers for performance.</p>
+
+  <div id="tree-container">
+    <div id="inner-tree"></div>
+  </div>
+
+  <!-- SPEED BAR -->
+<div id="speed-control">
+  <label for="speedRange">Animation Speed:</label>
+  <input type="range" id="speedRange" min="0" max="2000" value="1000" step="100">
+  <span id="speedValue">1.0s</span>
+</div>
+
+  <!-- NEW PATH PANEL -->
+  <div id="path-panel" style="display:none;">
+    <h2>Found Paths to Target Sum</h2>
+    <div id="paths-list"></div>
+  </div>
+
+  <div id="footer">
+    <button id="yesBtn" class="fancy-btn yes-btn" disabled>YES (Include)</button>
+    <button id="noBtn" class="fancy-btn no-btn" disabled>NO (Exclude)</button>
+    <button id="autoBtn" class="fancy-btn bg-pink-500" disabled>Auto Build</button>
+  </div>
+</div>
+
+<script>
+  let numbers = [];
+  let target = 0;
+  let treeLevels = [];
+  let nodePositions = new Map();
+  let activeNode = null;
+
+  const treeContainer = document.getElementById('tree-container');
+  const innerTree = document.getElementById('inner-tree');
+  const yesBtn = document.getElementById('yesBtn');
+  const noBtn = document.getElementById('noBtn');
+  const autoBtn = document.getElementById('autoBtn');
+
+  const pathPanel = document.getElementById('path-panel');
+  const pathsList = document.getElementById('paths-list');
+
+  // List of nodes where sum === target (leaf or possibly internal)
+  let solutionNodes = [];
+
+  document.getElementById('startBtn').addEventListener('click', () => {
+    const numsText = document.getElementById('numbers').value.trim();
+    const tgtText = document.getElementById('target').value.trim();
+
+    if (!numsText || !tgtText) {
+      alert('Please enter numbers and a target.');
+      return;
+    }
+
+    const numArray = numsText.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+
+    if (numArray.length === 0) {
+      alert('Please enter valid numbers.');
+      return;
+    }
+
+    if (numArray.length > 10) {
+      alert('Please limit input to max 10 numbers for performance.');
+      return;
+    }
+
+    numbers = numArray;
+    target = parseInt(tgtText);
+
+    resetTree();
+    buildRootNode();
+
+    yesBtn.disabled = false;
+    noBtn.disabled = false;
+    autoBtn.disabled = false;
+    pathPanel.style.display = 'none';
+  });
+
+  yesBtn.addEventListener('click', () => onDecision(true));
+  noBtn.addEventListener('click', () => onDecision(false));
+  autoBtn.addEventListener('click', () => autoBuildTree());
+
+  function resetTree() {
+    treeLevels = [];
+    nodePositions.clear();
+    activeNode = null;
+    solutionNodes = [];
+    innerTree.innerHTML = '';
+    pathsList.innerHTML = '';
+    pathPanel.style.display = 'none';
+  }
+
+  function createNode(index, sum, parent = null, decision = null) {
+    // decision: true for YES (include), false for NO (exclude), null for root
+    const node = {
+      index,
+      sum,
+      parent,
+      yesNode: null,
+      noNode: null,
+      isLeaf: index >= numbers.length,
+      div: null,
+      decision, 
+    };
+
+    // Create div for node
+    const div = document.createElement('div');
+    div.className = 'node';
+    div.innerHTML = `<div>Idx: ${index}</div><div>Sum: ${sum}</div>`;
+
+    if (!node.isLeaf) {
+      const btns = document.createElement('div');
+      btns.className = 'buttons';
+      btns.innerHTML = `
+        <button class="yes-btn">YES</button>
+        <button class="no-btn">NO</button>
+      `;
+      div.appendChild(btns);
+    } else {
+      // leaf node will show result after full build
+    }
+
+    node.div = div;
+
+    // Right-click event for target sum nodes (added later after render)
+    return node;
+  }
+
+  function addNodeToLevel(level, node) {
+    if (!treeLevels[level]) treeLevels[level] = [];
+    treeLevels[level].push(node);
+  }
+
+  function buildRootNode() {
+    const root = createNode(0, 0, null);
+    addNodeToLevel(0, root);
+    activeNode = root;
+    renderTree();
+  }
+
+  function calculatePositions() {
+    nodePositions.clear();
+    const levelHeight = 140; 
+    const nodeWidth = 70;
+    const nodeGap = 40;
+
+    let maxNodesInLevel = 0;
+    for (const level of treeLevels) {
+      if (level && level.length > maxNodesInLevel) maxNodesInLevel = level.length;
+    }
+    const totalWidth = maxNodesInLevel * (nodeWidth + nodeGap) + nodeGap;
+
+    const baseWidth = 1200;
+    innerTree.style.minWidth = Math.max(totalWidth, baseWidth) + 'px';
+
+    for (let lvl = 0; lvl < treeLevels.length; lvl++) {
+      const level = treeLevels[lvl];
+      if (!level) continue;
+      const y = lvl * levelHeight + 10;
+
+      const count = level.length;
+      if (count === 1) {
+        const x = totalWidth / 2;
+        nodePositions.set(level[0], { x, y });
+      } else {
+        const gap = (totalWidth - count * nodeWidth) / (count + 1);
+        for (let i = 0; i < count; i++) {
+          const x = gap + i * (nodeWidth + gap) + nodeWidth / 2;
+          nodePositions.set(level[i], { x, y });
+        }
+      }
+    }
+  }
+
+  function renderTree() {
+    innerTree.innerHTML = '';
+    solutionNodes = [];
+
+    calculatePositions();
+
+    const svg = createSVGOverlay();
+    svg.setAttribute('width', innerTree.clientWidth);
+    svg.setAttribute('height', innerTree.clientHeight);
+    innerTree.appendChild(svg);
+
+    for (const level of treeLevels) {
+      if (!level) continue;
+      for (const node of level) {
+        const pos = nodePositions.get(node);
+        if (!pos) continue;
+        const div = node.div;
+
+        div.style.left = `${pos.x - 35}px`; 
+        div.style.top = `${pos.y}px`;
+        div.style.position = 'absolute';
+
+        // Reset classes
+        div.classList.remove('leaf', 'correct', 'incorrect', 'gray', 'target-sum', 'path-highlight');
+
+        if (node.isLeaf) {
+          div.classList.add('leaf');
+          if (node.sum === target) {
+            div.classList.add('correct');
+          } else {
+            div.classList.add('incorrect');
+          }
+          const btns = div.querySelector('.buttons');
+          if (btns) btns.style.display = 'none';
+
+          let resDiv = div.querySelector('.result');
+          if (!resDiv) {
+            resDiv = document.createElement('div');
+            resDiv.className = 'result';
+            div.appendChild(resDiv);
+          }
+          resDiv.textContent = node.sum === target ? '✓ Correct' : '✗ Incorrect';
+
+        } else {
+          const btns = div.querySelector('.buttons');
+          if (btns) btns.style.display = 'flex';
+          const resDiv = div.querySelector('.result');
+          if (resDiv) resDiv.remove();
+        }
+
+        // Highlight nodes with sum === target (any node, leaf or internal)
+        if (node.sum === target) {
+          div.classList.add('target-sum');
+          solutionNodes.push(node);
+        }
+
+        if (node === activeNode) {
+          div.classList.add('active');
+        } else {
+          div.classList.remove('active');
+        }
+
+        innerTree.appendChild(div);
+
+        // Attach right-click listener for target sum nodes to highlight path
+        if (node.sum === target) {
+          div.oncontextmenu = (e) => {
+            e.preventDefault();
+            highlightPath(node);
+          };
+        } else {
+          div.oncontextmenu = null;
+        }
+      }
+    }
+
+    for (const level of treeLevels) {
+      if (!level) continue;
+      for (const node of level) {
+        if (!node) continue;
+        const posFrom = nodePositions.get(node);
+        if (!posFrom) continue;
+
+        if (node.yesNode) {
+          const posTo = nodePositions.get(node.yesNode);
+          if (posTo) {
+            drawArrow(svg, posFrom.x, posFrom.y + 70, posTo.x, posTo.y);
+          }
+        }
+        if (node.noNode) {
+          const posTo = nodePositions.get(node.noNode);
+          if (posTo) {
+            drawArrow(svg, posFrom.x, posFrom.y + 70, posTo.x, posTo.y);
+          }
+        }
+      }
+    }
+
+    // Update the path panel if any solutions found
+    updatePathPanel();
+  }
+
+  // Highlight path from root to clicked node (clear previous highlights first)
+  function highlightPath(node) {
+    // Clear all previous highlights
+    for (const level of treeLevels) {
+      if (!level) continue;
+      for (const n of level) {
+        n.div.classList.remove('path-highlight');
+      }
+    }
+    // Traverse up to root and add highlight class
+    let cur = node;
+    while (cur) {
+      cur.div.classList.add('path-highlight');
+      cur = cur.parent;
+    }
+  }
+
+  function drawArrow(svg, x1, y1, x2, y2) {
+    const arrowSize = 10;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2 - 35);
+    line.setAttribute('stroke', '#333');
+    line.setAttribute('stroke-width', 2);
+    svg.appendChild(line);
+
+    // Arrowhead
+    const arrowHead = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const angle = Math.atan2(dy - 35, dx);
+    const arrowPoints = [
+      [0, 0],
+      [-arrowSize * Math.cos(angle - Math.PI / 6), -arrowSize * Math.sin(angle - Math.PI / 6)],
+      [-arrowSize * Math.cos(angle + Math.PI / 6), -arrowSize * Math.sin(angle + Math.PI / 6)],
+    ]
+      .map(p => `${x2 + p[0]},${y2 - 35 + p[1]}`)
+      .join(' ');
+    arrowHead.setAttribute('points', arrowPoints);
+    arrowHead.setAttribute('fill', '#333');
+    svg.appendChild(arrowHead);
+  }
+
+  function createSVGOverlay() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('arrow-svg');
+    svg.style.position = 'absolute';
+    svg.style.left = 0;
+    svg.style.top = 0;
+    svg.style.width = '100%';
+    svg.style.height = '600px';
+    svg.style.pointerEvents = 'none';
+    return svg;
+  }
+
+  function onDecision(include) {
+    if (!activeNode || activeNode.isLeaf) return;
+    const idx = activeNode.index;
+    const currentSum = activeNode.sum;
+
+    const nextIndex = idx + 1;
+    const chosenNumber = numbers[idx];
+
+    const newSum = include ? currentSum + chosenNumber : currentSum;
+
+    const nextNode = createNode(nextIndex, newSum, activeNode, include);
+
+    if (include) {
+      activeNode.yesNode = nextNode;
+    } else {
+      activeNode.noNode = nextNode;
+    }
+
+    addNodeToLevel(nextIndex, nextNode);
+    activeNode = nextNode;
+
+    renderTree();
+  }
+
+  function autoBuildTree() {
+  resetTree();
+
+  // Create root node
+  treeLevels[0] = [];
+  const root = createNode(0, 0, null);
+  treeLevels[0].push(root);
+
+  activeNode = null;
+
+  // Collect all nodes in order (BFS style) so we can animate step by step
+  let queue = [root];
+  let buildOrder = [];
+
+  while (queue.length > 0) {
+    const node = queue.shift();
+    buildOrder.push(node);
+
+    if (node.index < numbers.length) {
+      // Yes child
+      const yesNode = createNode(node.index + 1, node.sum + numbers[node.index], node, true);
+      node.yesNode = yesNode;
+      queue.push(yesNode);
+
+      // No child
+      const noNode = createNode(node.index + 1, node.sum, node, false);
+      node.noNode = noNode;
+      queue.push(noNode);
+    }
+  }
+
+  // Animate node creation one by one
+  treeLevels = [];
+  let step = 0;
+
+  function placeNode(node) {
+    if (!treeLevels[node.index]) treeLevels[node.index] = [];
+    treeLevels[node.index].push(node);
+    renderTree();
+  }
+
+  function nextStep() {
+    if (step >= buildOrder.length) return;
+    placeNode(buildOrder[step]);
+    step++;
+    setTimeout(nextStep, animationSpeed); // delay from slider
+  }
+
+  nextStep();
+}
+
+
+  const speedRange = document.getElementById('speedRange');
+  const speedValue = document.getElementById('speedValue');
+  let animationSpeed = parseInt(speedRange.value); // default 1000ms
+
+speedRange.addEventListener('input', () => {
+  animationSpeed = parseInt(speedRange.value);
+  speedValue.textContent = (animationSpeed / 1000).toFixed(2) + 's';
+  // You can use animationSpeed for controlling any animations/delays
+});
+
+
+  // Build the panel showing all solution paths
+  function updatePathPanel() {
+    if (solutionNodes.length === 0) {
+      pathPanel.style.display = 'none';
+      pathsList.innerHTML = '';
+      return;
+    }
+    pathPanel.style.display = 'block';
+    pathsList.innerHTML = '';
+
+    solutionNodes.forEach((node, i) => {
+      const path = [];
+      let cur = node;
+      while (cur) {
+        let step = `Idx:${cur.index} Sum:${cur.sum}`;
+        if (cur.decision === true) step += ' (YES)';
+        else if (cur.decision === false) step += ' (NO)';
+        path.unshift(step);
+        cur = cur.parent;
+      }
+      const pathEntry = document.createElement('div');
+      pathEntry.className = 'path-entry';
+      pathEntry.textContent = `Path ${i + 1}:\n${path.join('\n')}`;
+      pathsList.appendChild(pathEntry);
+    });
+  }
+</script>
+</body>
+</html>
