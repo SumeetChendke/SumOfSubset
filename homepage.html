@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUM OF SUBSET - MGM Labs</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1050;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .navbar.scrolled {
+            background-color: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar {
+            min-height: 100vh;
+            width: 200px;
+            border-right: 1px solid #ddd;
+            background: #f9f9f9;
+            padding-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar a {
+            display: block;
+            padding: 10px 5px;
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .sidebar a.active {
+            color: #ff6600;
+            font-weight: bold;
+        }
+        
+        .sidebar a:hover {
+            background: #f0f0f0;
+        }
+        
+        .sidebar.collapsed {
+            margin-left: -250px;
+        }
+        
+        .header {
+            border-bottom: 4px solid orange;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header img {
+            height: 50px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .rating i {
+            color: gold;
+        }
+        
+        .menu-btn {
+            font-size: 22px;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="header navbar bg-white">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-bars menu-btn" id="menuToggle"></i>
+            <img src="mgmlogo.jpeg" alt="MGM Labs Logo">
+            <span class="ms-2 fw-bold">MGM'S College of Engineering, Nanded</span>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-3 col-lg-2 sidebar" id="sidebarMenu">
+                    <a class="active" data-target="aim">Aim</a>
+                    <a data-target="overview">Overview</a>
+                    <a data-target="recap">Recap</a>
+                    <a data-target="pretest">Pretest</a>
+                    <a data-target="Sum of Subset">Sum Of Subset</a>
+                    <a data-target="analysis">Analysis</a>
+                    <a data-target="posttest">Posttest</a>
+                    <a data-target="references">References</a>
+                    <a data-target="feedback">Feedback</a>
+                </div>
+
+                <!-- Content -->
+                <div class="col content">
+                    <div id="aim" class="content-section active">
+                        <H1 class="fw-bold">
+                            <CENTER>SUM OF SUBSET</CENTER>
+                            </h3>
+                            <HR></HR>
+                            <H3><u>Estimated Time</u></H3><br>
+                            <p>1 Hour</p>
+
+                            <H3><u>Learning Objectives of the Experiment
+
+                            </u>
+                            </H3>
+                            <br>
+                            <p>In this experiment, we will be able to do the following:
+                            </p>
+                    </div>
+
+                    <div id="overview" class="content-section">
+                        <h1>Sum of Subset Experiment</h1>
+
+                        <!-- INTRO VIDEO -->
+                        <h3>A Short Introduction to the Overall Experiment</h3>
+                        <iframe src="https://www.youtube.com/watch?v=kyLxTdsT8ws" allowfullscreen></iframe>
+
+                        <!-- PREREQUISITES -->
+                        <h3>Prerequisites of the Experiment</h3>
+                        <p>This experiment requires you to have basic knowledge about:</p>
+                        <ol>
+                            <li>The concept of subsets and combinations</li>
+                            <li>Understanding of recursion and backtracking</li>
+                        </ol>
+                        <ul>
+                            <li>If you are a beginner, no worries! Just go through the Pre-Test Module → Recap section of this experiment, which helps you understand the above-mentioned basic concepts in brief.</li>
+                            <li>And above all, you should also have a curiosity to learn and explore!</li>
+                        </ul>
+
+                        <!-- OVERVIEW -->
+                        <h3>Overview of the Experiment</h3>
+                        <ul>
+                            <li>The aim of this experiment is to understand the Sum of Subset problem, how to generate subsets that satisfy a target sum, and how backtracking can be applied to prune unnecessary searches.</li>
+                            <li>The experiment features a series of modules with video lectures, interactive demonstrations, hands-on practice, exercises, and quizzes for self-analysis.</li>
+                        </ul>
+                    </div>
+
+                    <div id="recap" class="content-section">
+                        <h3 class="fw-bold">Recap</h3>
+                        <p>Find a subset of given set S whose elements add up to a target sum K. Can ask for:</P>
+                        <P>Just existence (Yes/No)</P>
+                        <P>All possible subsets</p>
+                        <p>Example: S = {3, 4, 5, 2},</p>
+                        <p> K = 7 ✅ Subsets = {3,4} and {5,2}</p>
+                    </div>
+
+                   <style>
+  /* Styles to highlight wrong and correct answers */
+  .wrong-answer {
+    color: red;
+    font-weight: bold;
+  }
+
+  .correct-answer {
+    color: green;
+    font-weight: bold;
+  }
+
+  .highlight-wrong {
+    background-color: #f8d7da; /* light red background */
+  }
+
+  .highlight-correct {
+    background-color: #d4edda; /* light green background */
+  }
+</style>
+
+<div id="pretest" class="content-section">
+  <h3 class="fw-bold">Pretest – Sum of Subset</h3>
+  <form id="sum-of-subset-pretest">
+    <ol>
+      <li>
+        The Sum of Subset problem belongs to which class of problems?<br>
+        <label><input type="radio" name="q1" value="wrong"> P</label><br>
+        <label><input type="radio" name="q1" value="correct"> NP-complete</label><br>
+        <label><input type="radio" name="q1" value="wrong"> Linear</label><br>
+        <label><input type="radio" name="q1" value="wrong"> Greedy</label>
+      </li><br>
+
+      <li>
+        Which of the following is the time complexity of the brute force solution?<br>
+        <label><input type="radio" name="q2" value="wrong"> O(n)</label><br>
+        <label><input type="radio" name="q2" value="wrong"> O(n²)</label><br>
+        <label><input type="radio" name="q2" value="correct"> O(2ⁿ)</label><br>
+        <label><input type="radio" name="q2" value="wrong"> O(log n)</label>
+      </li><br>
+
+      <li>
+        What does the Sum of Subset problem aim to find?<br>
+        <label><input type="radio" name="q3" value="wrong"> The largest element in the set</label><br>
+        <label><input type="radio" name="q3" value="correct"> Subsets with sum equal to a target value</label><br>
+        <label><input type="radio" name="q3" value="wrong"> The median of the set</label><br>
+        <label><input type="radio" name="q3" value="wrong"> The product of all elements</label>
+      </li><br>
+
+      <li>
+        Which approach is most efficient for large n but small target sum K?<br>
+        <label><input type="radio" name="q4" value="wrong"> Brute Force</label><br>
+        <label><input type="radio" name="q4" value="correct"> Dynamic Programming</label><br>
+        <label><input type="radio" name="q4" value="wrong"> Greedy Algorithm</label><br>
+        <label><input type="radio" name="q4" value="wrong"> Divide and Conquer</label>
+      </li><br>
+
+      <li>
+        The number of possible subsets of a set with n elements is:<br>
+        <label><input type="radio" name="q5" value="wrong"> n</label><br>
+        <label><input type="radio" name="q5" value="wrong"> n!</label><br>
+        <label><input type="radio" name="q5" value="correct"> 2ⁿ</label><br>
+        <label><input type="radio" name="q5" value="wrong"> n²</label>
+      </li><br>
+
+      <li>
+        Backtracking is useful in Sum of Subset because:<br>
+        <label><input type="radio" name="q6" value="wrong"> It ignores all subsets</label><br>
+        <label><input type="radio" name="q6" value="wrong"> It explores every subset without pruning</label><br>
+        <label><input type="radio" name="q6" value="correct"> It stops exploring when partial sum exceeds target</label><br>
+        <label><input type="radio" name="q6" value="wrong"> It sorts the set</label>
+      </li><br>
+
+      <li>
+        What is the worst-case time complexity of backtracking solution?<br>
+        <label><input type="radio" name="q7" value="correct"> O(2ⁿ)</label><br>
+        <label><input type="radio" name="q7" value="wrong"> O(n)</label><br>
+        <label><input type="radio" name="q7" value="wrong"> O(n²)</label><br>
+        <label><input type="radio" name="q7" value="wrong"> O(log n)</label>
+      </li><br>
+
+      <li>
+        The Sum of Subset problem can also be seen as a variation of:<br>
+        <label><input type="radio" name="q8" value="correct"> Knapsack problem</label><br>
+        <label><input type="radio" name="q8" value="wrong"> Binary search</label><br>
+        <label><input type="radio" name="q8" value="wrong"> Merge sort</label><br>
+        <label><input type="radio" name="q8" value="wrong"> Quick sort</label>
+      </li><br>
+
+      <li>
+        Which data structure is commonly used in backtracking implementation?<br>
+        <label><input type="radio" name="q9" value="wrong"> Queue</label><br>
+        <label><input type="radio" name="q9" value="correct"> Stack (recursion)</label><br>
+        <label><input type="radio" name="q9" value="wrong"> Linked List</label><br>
+        <label><input type="radio" name="q9" value="wrong"> Hash Table</label>
+      </li><br>
+
+      <li>
+        If the set is empty and target sum = 0, the solution is:<br>
+        <label><input type="radio" name="q10" value="wrong"> No subset exists</label><br>
+        <label><input type="radio" name="q10" value="correct"> Only the empty subset is a solution</label><br>
+        <label><input type="radio" name="q10" value="wrong"> Infinite solutions</label><br>
+        <label><input type="radio" name="q10" value="wrong"> None of the above</label>
+      </li><br>
+    </ol>
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Result Section -->
+  <div id="result" style="margin-top: 20px; font-weight: bold;"></div>
+</div>
+
+<script>
+  document.getElementById("sum-of-subset-pretest").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    // Reset previous highlights and feedback
+    document.querySelectorAll("label").forEach(label => {
+      label.classList.remove("wrong-answer", "correct-answer", "highlight-wrong", "highlight-correct");
+      // Remove any previously added explanation spans
+      const explanation = label.querySelector(".explanation");
+      if (explanation) explanation.remove();
+    });
+
+    let score = 0;
+    const form = e.target;
+    const questions = 10;
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "";
+
+    for (let i = 1; i <= questions; i++) {
+      const selected = form.querySelector(`input[name="q${i}"]:checked`);
+
+      // If no option selected for a question
+      if (!selected) {
+        resultDiv.innerHTML += `❗ Question ${i} not answered.<br>`;
+        continue;
+      }
+
+      if (selected.value === "correct") {
+        score++;
+        // Highlight correct selected answer
+        selected.parentElement.classList.add("correct-answer", "highlight-correct");
+      } else {
+        // Highlight wrong selected answer
+        selected.parentElement.classList.add("wrong-answer", "highlight-wrong");
+
+        // Find the correct answer label for this question
+        const allOptions = form.querySelectorAll(`input[name="q${i}"]`);
+        let correctLabel = null;
+        allOptions.forEach(option => {
+          if (option.value === "correct") {
+            correctLabel = option.parentElement;
+          }
+        });
+
+        if (correctLabel) {
+          // Highlight correct answer label
+          correctLabel.classList.add("correct-answer");
+
+          // Add explanation span after correct answer if not already present
+          if (!correctLabel.querySelector(".explanation")) {
+            const explanationSpan = document.createElement("span");
+            explanationSpan.classList.add("explanation");
+            explanationSpan.style.marginLeft = "10px";
+            explanationSpan.style.fontWeight = "normal";
+            explanationSpan.style.color = "green";
+            explanationSpan.textContent = " ← Correct Answer";
+            correctLabel.appendChild(explanationSpan);
+          }
+        }
+      }
+    }
+
+    resultDiv.innerHTML = `✅ You scored <strong>${score}</strong> out of ${questions}`;
+
+    if (score === questions) {
+      resultDiv.style.color = "green";
+      resultDiv.innerHTML += "<br>🎉 Excellent! You got all correct.";
+    } else if (score >= 6) {
+      resultDiv.style.color = "orange";
+      resultDiv.innerHTML += "<br>👍 Good job! Review missed questions.";
+    } else {
+      resultDiv.style.color = "red";
+      resultDiv.innerHTML += "<br>❗ You need more practice.";
+    }
+  });
+</script>
+
+                    </script>
+                    <div id="Sum Of Subset" class="content-section">
+                        <h3 class="fw-bold">Sum of Subset</h3>
+                        <ol>
+                            <li>Start with the given set of integers and a target sum.</li>
+                            <li>Begin with an empty subset and a running sum of 0</li>
+                            <li>Consider each element in the set one by one</li>
+                            <li>For the current element, first include it in the subset and add its value to the running sum</li>
+                            <li>If the running sum equals the target, record the subset as a solution.</li>
+                            <li>If the running sum exceeds the target or all elements have been considered, backtrack by removing the last element and try the next possibility.</li>
+                            <li>Repeat the process until all possible subsets have been explored</li>
+                            <li>Return all subsets whose sums equal the target</li>
+                        </ol>
+                    </div>
+
+                    <div id="analysis" class="content-section">
+                        <h3 class="fw-bold">Analysis</h3>
+                        <p>
+                            The Sum of Subset problem using backtracking has a worst-case time complexity of <b>O(2ⁿ)</b>, because in the worst case all possible subsets of the set need to be explored. Backtracking helps to prune branches where the partial
+                            sum exceeds the target, which can improve efficiency in practice. For small target sums, dynamic programming can provide a more efficient solution with polynomial time complexity.
+                        </p>
+                    </div>
+
+                   <div id="posttest" class="content-section">
+    <h3 class="fw-bold">Posttest – Sum of Subset</h3>
+    <form id="sum-of-subset-posttest">
+        <ol>
+            <li>
+                Which of the following statements is true about the Sum of Subset problem?<br>
+                <label><input type="radio" name="pq1" value="correct"> It can have zero, one, or multiple valid subsets.</label><br>
+                <label><input type="radio" name="pq1" value="wrong"> It always has exactly one solution.</label><br>
+                <label><input type="radio" name="pq1" value="wrong"> It cannot have an empty subset as a solution.</label><br>
+                <label><input type="radio" name="pq1" value="wrong"> It only works for sets of positive integers.</label>
+            </li><br>
+
+            <li>
+                In the backtracking approach, what is the key pruning condition?<br>
+                <label><input type="radio" name="pq2" value="wrong"> Skip subsets whose size is even.</label><br>
+                <label><input type="radio" name="pq2" value="correct"> Stop exploring when the running sum exceeds the target.</label><br>
+                <label><input type="radio" name="pq2" value="wrong"> Include all negative numbers automatically.</label><br>
+                <label><input type="radio" name="pq2" value="wrong"> Sort the set in descending order.</label>
+            </li><br>
+
+            <li>
+                Dynamic programming solution for Sum of Subset is efficient when:<br>
+                <label><input type="radio" name="pq3" value="correct"> The target sum is relatively small.</label><br>
+                <label><input type="radio" name="pq3" value="wrong"> The set has only one element.</label><br>
+                <label><input type="radio" name="pq3" value="wrong"> All elements are prime numbers.</label><br>
+                <label><input type="radio" name="pq3" value="wrong"> The set is sorted.</label>
+            </li><br>
+
+            <li>
+                What is the space complexity of the backtracking approach (ignoring recursion stack)?<br>
+                <label><input type="radio" name="pq4" value="wrong"> O(1)</label><br>
+                <label><input type="radio" name="pq4" value="correct"> O(n) (for storing the current subset)</label><br>
+                <label><input type="radio" name="pq4" value="wrong"> O(2ⁿ)</label><br>
+                <label><input type="radio" name="pq4" value="wrong"> O(n²)</label>
+            </li><br>
+
+            <li>
+                Which of the following is a valid subset of {1, 2, 3} with target sum 3?<br>
+                <label><input type="radio" name="pq5" value="correct"> {3}</label><br>
+                <label><input type="radio" name="pq5" value="wrong"> {1, 4}</label><br>
+                <label><input type="radio" name="pq5" value="wrong"> {2, 4}</label><br>
+                <label><input type="radio" name="pq5" value="wrong"> {1, 2, 3}</label>
+            </li><br>
+
+            <li>
+                If the set is {2, 4, 6, 10} and the target sum is 16, which subset is valid?<br>
+                <label><input type="radio" name="pq6" value="correct"> {6, 10}</label><br>
+                <label><input type="radio" name="pq6" value="wrong"> {2, 4, 6}</label><br>
+                <label><input type="radio" name="pq6" value="wrong"> {2, 6, 10}</label><br>
+                <label><input type="radio" name="pq6" value="wrong"> {4, 6}</label>
+            </li><br>
+
+            <li>
+                Which of the following is true about the brute-force approach?<br>
+                <label><input type="radio" name="pq7" value="correct"> It generates all 2ⁿ subsets and checks their sum.</label><br>
+                <label><input type="radio" name="pq7" value="wrong"> It always finds the solution in linear time.</label><br>
+                <label><input type="radio" name="pq7" value="wrong"> It prunes branches where sum exceeds target.</label><br>
+                <label><input type="radio" name="pq7" value="wrong"> It only works for sorted sets.</label>
+            </li><br>
+
+            <li>
+                What data structure naturally helps in backtracking implementations?<br>
+                <label><input type="radio" name="pq8" value="wrong"> Queue</label><br>
+                <label><input type="radio" name="pq8" value="correct"> Stack (recursion)</label><br>
+                <label><input type="radio" name="pq8" value="wrong"> Hash Map</label><br>
+                <label><input type="radio" name="pq8" value="wrong"> Linked List</label>
+            </li><br>
+
+            <li>
+                In which scenario is the Sum of Subset problem considered easy to solve?<br>
+                <label><input type="radio" name="pq9" value="wrong"> When n is very large and K is large</label><br>
+                <label><input type="radio" name="pq9" value="wrong"> When all numbers are negative</label><br>
+                <label><input type="radio" name="pq9" value="correct"> When n is moderate and K is small</label><br>
+                <label><input type="radio" name="pq9" value="wrong"> When the set contains zeros only</label>
+            </li><br>
+
+            <li>
+                Which statement correctly describes the solution set of Sum of Subset?<br>
+                <label><input type="radio" name="pq10" value="wrong"> It always contains exactly n subsets.</label><br>
+                <label><input type="radio" name="pq10" value="wrong"> It never includes the empty set.</label><br>
+                <label><input type="radio" name="pq10" value="correct"> It may contain multiple subsets including the empty set (if target = 0).</label><br>
+                <label><input type="radio" name="pq10" value="wrong"> It always contains only one subset.</label>
+            </li>
+        </ol>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Result Section -->
+    <div id="posttest-result" style="display:none; margin-top: 20px; font-weight: bold;"></div>
+
+    <script>
+        document.getElementById("sum-of-subset-posttest").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            // Clear previous styling and messages
+            const form = e.target;
+            const resultDiv = document.getElementById("posttest-result");
+            resultDiv.style.display = "block";
+
+            // Reset label colors and messages
+            form.querySelectorAll('label').forEach(label => {
+                label.style.color = "";
+                if (label.querySelector(".answer-feedback")) {
+                    label.querySelector(".answer-feedback").remove();
+                }
+            });
+
+            let score = 0;
+
+            // Correct answers for each question name
+            const correctAnswers = {
+                pq1: "correct",
+                pq2: "correct",
+                pq3: "correct",
+                pq4: "correct",
+                pq5: "correct",
+                pq6: "correct",
+                pq7: "correct",
+                pq8: "correct",
+                pq9: "correct",
+                pq10: "correct"
+            };
+
+            // Store the correct answer label text for showing when user is wrong
+            const correctAnswerTexts = {};
+
+            // Populate correctAnswerTexts for each question
+            for (const qName in correctAnswers) {
+                const correctInput = form.querySelector(`input[name="${qName}"][value="correct"]`);
+                if (correctInput) {
+                    correctAnswerTexts[qName] = correctInput.parentElement.textContent.trim();
+                }
+            }
+
+            // Iterate over questions
+            for (let i = 1; i <= 10; i++) {
+                const qName = `pq${i}`;
+                const checked = form.querySelector(`input[name="${qName}"]:checked`);
+                if (!checked) {
+                    // No answer selected: mark question as wrong (red)
+                    const labels = form.querySelectorAll(`input[name="${qName}"]`);
+                    labels.forEach(input => {
+                        input.parentElement.style.color = "red";
+                    });
+                    resultDiv.innerHTML = `❗ Please answer all questions.`;
+                    resultDiv.style.color = "red";
+                    return; // Stop processing further
+                }
+
+                if (checked.value === "correct") {
+                    score++;
+                    // Mark correct answer label green with ✅
+                    checked.parentElement.style.color = "green";
+                    if (!checked.parentElement.querySelector(".answer-feedback")) {
+                        const span = document.createElement("span");
+                        span.textContent = " ✅";
+                        span.classList.add("answer-feedback");
+                        checked.parentElement.appendChild(span);
+                    }
+                } else {
+                    // Mark selected wrong answer red with ❌
+                    checked.parentElement.style.color = "red";
+                    if (!checked.parentElement.querySelector(".answer-feedback")) {
+                        const span = document.createElement("span");
+                        span.textContent = " ❌";
+                        span.classList.add("answer-feedback");
+                        checked.parentElement.appendChild(span);
+                    }
+                    // Show correct answer label green with ✅
+                    const correctInput = form.querySelector(`input[name="${qName}"][value="correct"]`);
+                    if (correctInput) {
+                        const correctLabel = correctInput.parentElement;
+                        correctLabel.style.color = "green";
+                        if (!correctLabel.querySelector(".answer-feedback")) {
+                            const span = document.createElement("span");
+                            span.textContent = " ✅ Correct answer";
+                            span.classList.add("answer-feedback");
+                            correctLabel.appendChild(span);
+                        }
+                    }
+                }
+            }
+
+            // Show overall score
+            resultDiv.innerHTML = `✅ You scored <strong>${score}</strong> out of 10`;
+            if (score === 10) {
+                resultDiv.style.color = "green";
+                resultDiv.innerHTML += "<br>🎉 Excellent! All correct.";
+            } else if (score >= 6) {
+                resultDiv.style.color = "orange";
+                resultDiv.innerHTML += "<br>👍 Good job! Review missed questions.";
+            } else {
+                resultDiv.style.color = "red";
+                resultDiv.innerHTML += "<br>❗ You need more practice.";
+            }
+        });
+    </script>
+</div>
+
+
+
+                    <div id="references" class="content-section">
+                        <h3 class="fw-bold">References</h3>
+                        <ul>
+                            <li>GeeksforGeeks: Sum of Subset Problem – <a href="https://www.geeksforgeeks.org/subset-sum-problem-dp-25/" target="_blank">https://www.geeksforgeeks.org/subset-sum-problem-dp-25/</a></li>
+                            <li>Programiz: Subset Sum Problem – <a href="https://www.programiz.com/dsa/subset-sum-problem" target="_blank">https://www.programiz.com/dsa/subset-sum-problem</a></li>
+                            <li>TopCoder Tutorials: Backtracking Techniques – <a href="https://www.topcoder.com/thrive/articles/Backtracking%20Techniques" target="_blank">https://www.topcoder.com/thrive/articles/Backtracking%20Techniques</a></li>
+                        </ul>
+                    </div>
+
+                    <div id="feedback" class="content-section">
+                        <h3 class="fw-bold">Feedback</h3>
+                        <p>We value your feedback! Please rate this virtual lab:</p>
+
+                        <!-- Star Rating -->
+                        <div class="star-rating">
+                            <input type="radio" id="star5" name="rating" value="5"><label for="star5" title="Excellent">★</label>
+                            <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="Very Good">★</label>
+                            <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="Good">★</label>
+                            <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="Fair">★</label>
+                            <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="Poor">★</label>
+                        </div>
+
+                        <button id="submit-feedback" class="btn btn-primary mt-2">Submit</button>
+                        <div id="feedback-result" style="margin-top: 10px; font-weight: bold;"></div>
+                    </div>
+
+                    <!-- Star Rating Styles -->
+                    <style>
+                        .star-rating {
+                            direction: rtl;
+                            font-size: 2em;
+                            unicode-bidi: bidi-override;
+                            display: inline-block;
+                        }
+                        
+                        .star-rating input {
+                            display: none;
+                        }
+                        
+                        .star-rating label {
+                            color: #ccc;
+                            cursor: pointer;
+                            transition: color 0.2s;
+                        }
+                        
+                        .star-rating input:checked~label,
+                        .star-rating label:hover,
+                        .star-rating label:hover~label {
+                            color: gold;
+                        }
+                    </style>
+
+                    <!-- Feedback Script -->
+                    <script>
+                        document.getElementById("submit-feedback").addEventListener("click", function() {
+                            const stars = document.querySelectorAll('input[name="rating"]');
+                            let rating = 0;
+                            stars.forEach(star => {
+                                if (star.checked) rating = star.value;
+                            });
+
+                            const resultDiv = document.getElementById("feedback-result");
+                            if (rating > 0) {
+                                resultDiv.style.color = "green";
+                                resultDiv.innerHTML = `⭐ You rated this lab ${rating} out of 5 stars. Thank you for your feedback!`;
+                            } else {
+                                resultDiv.style.color = "red";
+                                resultDiv.innerHTML = "❗ Please select a star rating before submitting.";
+                            }
+                        });
+                    </script>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-dark text-center text-lg-start border-top mt-4">
+            <div class="container p-3 text-white">
+                <div class="row text-white">
+                    <div class="col-md-6 text-start">
+                        <p class="mb-0">&copy; 2025 MGM Labs. All Rights Reserved.</p>
+                        <small class=" text-white">An MoE Govt. of India Initiative</small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <a href="#" class="me-3 text-decoration-none text-white">Privacy Policy</a>
+                        <a href="#" class="me-3 text-decoration-none text-white">Terms of Use</a>
+                        <a href="#" class="text-decoration-none text-white">Contact Us</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Sidebar Toggle + Content Switch Script -->
+        <script>
+            // Sidebar Toggle
+            document.getElementById("menuToggle").addEventListener("click", function() {
+                document.getElementById("sidebarMenu").classList.toggle("collapsed");
+            });
+
+            // Content Switcher
+            document.querySelectorAll("#sidebarMenu a").forEach(link => {
+                link.addEventListener("click", function() {
+                    // remove active from all menu items
+                    document.querySelectorAll("#sidebarMenu a").forEach(l => l.classList.remove("active"));
+                    this.classList.add("active");
+
+                    // hide all content sections
+                    document.querySelectorAll(".content-section").forEach(sec => sec.classList.remove("active"));
+
+                    // show selected section
+                    const sectionId = this.getAttribute("data-target");
+                    document.getElementById(sectionId).classList.add("active");
+                });
+            });
+        </script>
+</body>
+
+</html>
